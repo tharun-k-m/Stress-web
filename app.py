@@ -1,28 +1,30 @@
 import os
 import sys
 import zipfile
+import streamlit as st
 
-# 1. Unzip the library if it hasn't been done yet
+# 1. Unzip the library ONLY if the folder doesn't exist yet
 if not os.path.exists('pkgs') and os.path.exists('pkgs.zip'):
     with zipfile.ZipFile('pkgs.zip', 'r') as zip_ref:
         zip_ref.extractall('.')
 
-# 2. Tell Python to use the unzipped folder
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'pkgs'))
+# 2. Tell Python to look INSIDE the 'pkgs' folder for the libraries
+# We use abspath to make sure the server doesn't get confused by relative paths
+vendor_dir = os.path.abspath('pkgs')
+if vendor_dir not in sys.path:
+    sys.path.insert(0, vendor_dir)
 
-# 3. Now import MediaPipe
-import mediapipe as mp
-from mediapipe.solutions import face_mesh
+# 3. Now import MediaPipe and other local modules
+try:
+    import mediapipe as mp
+    from mediapipe.solutions import face_mesh
+    import cv2
+except ImportError as e:
+    st.error(f"Manual library load failed: {e}")
 
-# NOW import your libraries
-import streamlit as st
-import mediapipe as mp
-from mediapipe.solutions import face_mesh
-
-import streamlit as st
 from core import predict_voice, predict_video, get_recommendations
 
-# Run this once at the top
+# --- Rest of your App Code ---
 if "reloaded" not in st.session_state:
     st.session_state.reloaded = True
 
@@ -30,6 +32,10 @@ st.set_page_config(page_title="Stress Detection", layout="centered")
 
 st.title("🧠 Stress Detection App")
 st.write("Detect stress levels from audio or video uploads.")
+
+# ... rest of your tab code remains the same ...
+
+
 
 # ------------------ Tabs ------------------
 tab_audio, tab_video = st.tabs(["Audio Stress Detection", "Video Stress Detection"])
