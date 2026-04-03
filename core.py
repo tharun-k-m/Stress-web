@@ -7,6 +7,15 @@ import torch.nn.functional as F
 import torchaudio.transforms as T
 import tempfile
 import soundfile as sf
+import subprocess
+import sys
+
+# Force install mediapipe if it's missing
+try:
+    import mediapipe
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "mediapipe"])
+    import mediapipe
 
 import mediapipe.solutions.face_mesh as mp_face_mesh
 
