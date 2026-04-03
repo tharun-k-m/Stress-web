@@ -2,7 +2,7 @@ streamlit
 torch
 torchaudio
 torchvision
-opencv-python-headless
+opencv
 numpy
 mediapipe
 soundfile
