@@ -10,12 +10,11 @@ import soundfile as sf
 import subprocess
 import sys
 
-# Force install mediapipe if it's missing
-try:
-    import mediapipe
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "mediapipe"])
-    import mediapipe
+import mediapipe as mp
+from mediapipe.solutions import face_mesh
+import cv2
+# ... rest of your core.py logic
+
 
 import mediapipe.solutions.face_mesh as mp_face_mesh
 
