@@ -4,3 +4,4 @@ torchaudio
 torchvision
 numpy
 soundfile
+matplotlib
