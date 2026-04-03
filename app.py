@@ -1,14 +1,18 @@
-import subprocess
-import sys
 import os
+import sys
+import zipfile
 
-# Check if we are on Streamlit Cloud (Linux)
-if os.name == 'posix':
-    # Run the installer script if mediapipe is missing
-    try:
-        import mediapipe
-    except ImportError:
-        subprocess.call([sys.executable, "install_dependencies.py"])
+# 1. Unzip the library if it hasn't been done yet
+if not os.path.exists('pkgs') and os.path.exists('pkgs.zip'):
+    with zipfile.ZipFile('pkgs.zip', 'r') as zip_ref:
+        zip_ref.extractall('.')
+
+# 2. Tell Python to use the unzipped folder
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'pkgs'))
+
+# 3. Now import MediaPipe
+import mediapipe as mp
+from mediapipe.solutions import face_mesh
 
 # NOW import your libraries
 import streamlit as st
