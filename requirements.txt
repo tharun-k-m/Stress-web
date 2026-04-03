@@ -1,8 +1,8 @@
-opencv-python-headless
-streamlit
 torch
 torchaudio
 torchvision
 numpy
-mediapipe==0.8.4.2
+mediapipe==0.10.11
+opencv-python-headless
+streamlit
 soundfile
