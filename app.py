@@ -3,31 +3,48 @@ import sys
 import zipfile
 import streamlit as st
 
-# 1. Unzip if needed
-if not os.path.exists('pkgs') and os.path.exists('pkgs.zip'):
-    with zipfile.ZipFile('pkgs.zip', 'r') as zip_ref:
-        zip_ref.extractall('pkgs_unzipped') # Extract to a fresh folder
+# 1. Force Unzip to a specific folder
+zip_path = 'pkgs.zip'
+extract_path = 'extracted_pkgs'
 
-# 2. AUTO-FIND the library folder
-# This searches for where 'mediapipe' actually lives in your zip
+if os.path.exists(zip_path):
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_path)
+    st.success("✅ pkgs.zip found and extracted!")
+else:
+    st.error("❌ pkgs.zip NOT found in root directory!")
+
+# 2. Debug: Look at the folder structure
+# This will help us find the deep 'mediapipe' folder
+all_files = []
+for root, dirs, files in os.walk(extract_path):
+    for d in dirs:
+        all_files.append(os.path.join(root, d))
+
+# 3. Find the parent folder of 'mediapipe'
 vendor_dir = None
-for root, dirs, files in os.walk('pkgs_unzipped'):
-    if 'mediapipe' in dirs:
-        vendor_dir = os.path.abspath(root)
+for path in all_files:
+    if path.endswith('mediapipe'):
+        vendor_dir = os.path.dirname(os.path.abspath(path))
         break
 
 if vendor_dir:
-    sys.path.insert(0, vendor_dir)
-    # Also add the parent just in case
-    sys.path.insert(0, os.path.abspath('pkgs_unzipped'))
+    if vendor_dir not in sys.path:
+        sys.path.insert(0, vendor_dir)
+    st.write(f"📂 Found mediapipe at: `{vendor_dir}`")
 else:
-    st.error("Could not find 'mediapipe' folder inside pkgs.zip. Please check your zip structure!")
+    st.error("⚠️ Could not find a folder named 'mediapipe' inside the zip.")
+    st.write("Current folders found:", all_files)
 
-# 3. Import
-import mediapipe as mp
-import cv2
+# 4. Final attempt to import
+try:
+    import mediapipe as mp
+    import cv2
+    st.success("🚀 MediaPipe and CV2 loaded successfully!")
+except Exception as e:
+    st.error(f"Failed to load MediaPipe: {e}")
+
 from core import predict_voice, predict_video, get_recommendations
-
 
 
 # --- Rest of your App Code ---
