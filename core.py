@@ -7,29 +7,41 @@ import torch.nn.functional as F
 import torchaudio.transforms as T
 import tempfile
 import soundfile as sf
-import streamlit as st
-import mediapipe.python.solutions.face_mesh as mp_face_mesh
+import subprocess
+import sys
+
+# Force install mediapipe if it's missing
+try:
+    import mediapipe
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "mediapipe"])
+    import mediapipe
+
+import mediapipe.solutions.face_mesh as mp_face_mesh
+
+face_mesh = mp_face_mesh.FaceMesh(
+    max_num_faces=1,
+    refine_landmarks=True,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+)
 
 # ===================== DEVICE =====================
 device = torch.device("cpu")
 
 # ===================== AUDIO MODEL =====================
-# Load ResNet18 model
-# core.py
 import torchvision.models as models
-import torch.nn as nn
 
 # Instantiate ResNet18 locally
-model = models.resnet18(weights=None)  # No hub download
+model = models.resnet18(weights=None)
 model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
 num_ftrs = model.fc.in_features
 model.fc = nn.Sequential(nn.Dropout(0.6), nn.Linear(num_ftrs, 3))
 
 # Load your pre-trained weights
-import os, torch
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "vsa_resnet18_3class_68pct.pth")
-model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu"))
+model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model.eval()
 
 # Mel spectrogram transform
@@ -43,8 +55,7 @@ mel_transform = T.MelSpectrogram(
 
 labels = ["Low Stress", "Medium Stress", "High Stress"]
 
-# Recommendations
-# core.py
+# ===================== RECOMMENDATIONS =====================
 def get_recommendations(stress_level):
     recommendations = {
         "Low Stress": ["Maintain your current routine", "Listen to relaxing music", "Take short breaks during work"],
@@ -57,7 +68,6 @@ def get_recommendations(stress_level):
 
 # ===================== AUDIO PREDICTION =====================
 def predict_voice(uploaded_file):
-    # Save temp audio file
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
         tmp.write(uploaded_file.read())
         path = tmp.name
@@ -155,28 +165,3 @@ def predict_video(uploaded_file):
         return "Moderate Stress"
     else:
         return "High Stress"
-
-# ===================== STREAMLIT UI =====================
-st.title("Stress Detection App")
-st.write("Detect stress levels from audio or video uploads.")
-
-tab1, tab2 = st.tabs(["Audio Stress Detection", "Video Stress Detection"])
-
-with tab1:
-    uploaded_audio = st.file_uploader("Upload an audio file", type=["wav", "mp3"])
-    if uploaded_audio is not None:
-        stress, recs = predict_voice(uploaded_audio)
-        st.write(f"**Stress Level:** {stress}")
-        st.write("**Recommendations:**")
-        for r in recs:
-            st.write(f"- {r}")
-
-with tab2:
-    uploaded_video = st.file_uploader("Upload a video file", type=["mp4", "mov"])
-    if uploaded_video is not None:
-        stress = predict_video(uploaded_video)
-        st.write(f"**Stress Level:** {stress}")
-        st.write("**Recommendations:**")
-        recs = get_recommendations(stress)
-        for r in recs:
-            st.write(f"- {r}")

@@ -1,3 +1,20 @@
+import subprocess
+import sys
+import os
+
+# Check if we are on Streamlit Cloud (Linux)
+if os.name == 'posix':
+    # Run the installer script if mediapipe is missing
+    try:
+        import mediapipe
+    except ImportError:
+        subprocess.call([sys.executable, "install_dependencies.py"])
+
+# NOW import your libraries
+import streamlit as st
+import mediapipe as mp
+from mediapipe.solutions import face_mesh
+
 import streamlit as st
 from core import predict_voice, predict_video, get_recommendations
 
