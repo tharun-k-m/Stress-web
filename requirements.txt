@@ -4,5 +4,5 @@ torch
 torchaudio
 torchvision
 numpy
-mediapipe==0.10.0.1
+mediapipe
 soundfile
