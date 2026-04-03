@@ -7,7 +7,10 @@ import torch.nn.functional as F
 import torchaudio.transforms as T
 import tempfile
 import soundfile as sf
-import mediapipe.python.solutions.face_mesh as mp_face_mesh
+import mediapipe as mp
+
+# Correct public import
+mp_face_mesh = mp.solutions.face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True)
 
 # ===================== DEVICE =====================
 device = torch.device("cpu")
