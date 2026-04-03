@@ -1,18 +1,29 @@
 import os
 import sys
 import zipfile
+import streamlit as st
 
-# 1. Unzip the file
+# 1. Unzip if needed
 if not os.path.exists('pkgs') and os.path.exists('pkgs.zip'):
     with zipfile.ZipFile('pkgs.zip', 'r') as zip_ref:
-        zip_ref.extractall('.')
+        zip_ref.extractall('pkgs_unzipped') # Extract to a fresh folder
 
-# 2. Point to the nested folder (pkgs/pkgs)
-# This is where your 'mediapipe' and 'cv2' folders actually live
-vendor_dir = os.path.abspath(os.path.join('pkgs', 'pkgs'))
-sys.path.insert(0, vendor_dir)
+# 2. AUTO-FIND the library folder
+# This searches for where 'mediapipe' actually lives in your zip
+vendor_dir = None
+for root, dirs, files in os.walk('pkgs_unzipped'):
+    if 'mediapipe' in dirs:
+        vendor_dir = os.path.abspath(root)
+        break
 
-# 3. Now the imports will work
+if vendor_dir:
+    sys.path.insert(0, vendor_dir)
+    # Also add the parent just in case
+    sys.path.insert(0, os.path.abspath('pkgs_unzipped'))
+else:
+    st.error("Could not find 'mediapipe' folder inside pkgs.zip. Please check your zip structure!")
+
+# 3. Import
 import mediapipe as mp
 import cv2
 from core import predict_voice, predict_video, get_recommendations
