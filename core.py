@@ -1,4 +1,5 @@
 import os
+import cv2
 import numpy as np
 import torch
 import torch.nn as nn
@@ -6,8 +7,7 @@ import torch.nn.functional as F
 import torchaudio.transforms as T
 import tempfile
 import soundfile as sf
-import cv2
-import mediapipe as mp
+import mediapipe.python.solutions.face_mesh as mp_face_mesh
 
 # ===================== DEVICE =====================
 device = torch.device("cpu")
@@ -21,10 +21,10 @@ model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
 num_ftrs = model.fc.in_features
 model.fc = nn.Sequential(nn.Dropout(0.6), nn.Linear(num_ftrs, 3))
 
-# Load pre-trained weights
+# Load your pre-trained weights
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "vsa_resnet18_3class_68pct.pth")
-model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu"))
+model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model.eval()
 
 # Mel spectrogram transform
@@ -58,17 +58,14 @@ def predict_voice(uploaded_file):
     audio, sr = sf.read(path)
     if len(audio.shape) > 1:
         audio = np.mean(audio, axis=1)
-
     wav = torch.tensor(audio, dtype=torch.float32).unsqueeze(0)
     spec = mel_transform(wav)
     spec = torch.log(spec + 1e-9)
     spec = (spec - spec.mean()) / (spec.std() + 1e-6)
-
     if spec.shape[2] < 256:
         spec = F.pad(spec, (0, 256 - spec.shape[2]))
     else:
         spec = spec[:, :, :256]
-
     spec = spec.unsqueeze(0)
 
     with torch.no_grad():
@@ -81,7 +78,7 @@ def predict_voice(uploaded_file):
     return stress_level, recommendations
 
 # ===================== VIDEO PREDICTION =====================
-face_mesh = mp.solutions.face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True)
+face_mesh = mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True)
 
 def dist(p1, p2):
     return np.linalg.norm(p1 - p2)
