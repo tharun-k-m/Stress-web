@@ -1,6 +1,6 @@
-opencv_python_headless==4.5.2.54
-streamlit==0.82.0
-mediapipe==0.8.4.2
+streamlit
+mediapipe
+opencv-python-headless
 torch
 torchaudio
 torchvision
