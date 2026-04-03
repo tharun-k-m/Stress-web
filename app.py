@@ -1,8 +1,13 @@
 import streamlit as st
-import os
+import mediapipe as mp
+import cv2
+import matplotlib.pyplot as plt
+from core import predict_voice, predict_video, get_recommendations
 
-# Ensure the UI starts immediately
 st.set_page_config(page_title="Stress Detection", layout="centered")
+# ... rest of your UI code
+
+
 
 # Standard imports (Streamlit Cloud will handle these via requirements.txt)
 try:
