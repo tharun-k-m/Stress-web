@@ -8,7 +8,7 @@ import torchaudio.transforms as T
 import tempfile
 import soundfile as sf
 
-import mediapipe.python.solutions.face_mesh as mp_face_mesh
+import mediapipe.solutions.face_mesh as mp_face_mesh
 
 face_mesh = mp_face_mesh.FaceMesh(
     max_num_faces=1,
