@@ -1,3 +1,2 @@
 libgl1
-libglib2.0-bin
-libnss3
+libglib2.0-0
