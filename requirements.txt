@@ -4,5 +4,6 @@ torch
 torchvision
 torchaudio
 soundfile
-numpy
 streamlit
+numpy
+
