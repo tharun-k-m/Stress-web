@@ -1,7 +1,7 @@
-streamlit
 mediapipe
 opencv-python-headless
-matplotlib
-numpy
-soundfile
 torch
+torchaudio
+torchvision
+soundfile
+numpy
